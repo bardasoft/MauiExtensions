@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StackLayout xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:Extensions="clr-namespace:Microsoft.Maui.Controls;assembly=MauiExtensions"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Microsoft.Maui.Controls.Testing.EditListView"
+             x:Name="self"
+             Orientation="Vertical"
+             Spacing="0">
+    <Extensions:ActionableListView>
+        <ListView.Header>
+            <StackLayout x:Name="Header"
+                         Orientation="Vertical"
+                         Spacing="0">
+                <ContentView x:Name="HeaderView" />
+
+                <FlexLayout Direction="Row"
+                            Wrap="NoWrap"
+                            JustifyContent="SpaceBetween"
+                            AlignItems="Center"
+                            Padding="10">
+                    <Button x:Name="Edit"
+                            BackgroundColor="Transparent"
+                            TextColor="Default"
+                            FontSize="Body" />
+
+                    <Button x:Name="Add"
+                            HorizontalOptions="EndAndExpand"
+                            BackgroundColor="Transparent"
+                            Text="+"
+                            TextColor="Default"
+                            FontSize="Title" />
+                </FlexLayout>
+            </StackLayout>
+        </ListView.Header>
+    </Extensions:ActionableListView>
+    
+    <StackLayout x:Name="EditingToolbar"
+                 Orientation="Horizontal"
+                 BackgroundColor="LightGray"
+                 IsVisible="{Binding Source={x:Reference self}, Path=Editing}">
+        <Button x:Name="Delete"
+                HorizontalOptions="EndAndExpand"
+                Text="Delete"
+                FontSize="Body" />
+    </StackLayout>
+</StackLayout>
