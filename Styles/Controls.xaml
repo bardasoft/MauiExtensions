@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+                    xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=MauiExtensions"
+                    xmlns:ext="clr-namespace:Microsoft.Maui.Controls.Extensions;assembly=MauiExtensions"
+                    x:Class="Microsoft.Maui.Controls.Extensions.Controls">
+    <!-- ================================== VIEWS ================================== -->
+
+    <Style TargetType="ScrollView"
+           Class="HidesTabBarOnScroll">
+        <Style.Behaviors>
+            <maui:AddStatefulTriggerActionBehavior x:TypeArguments="ext:HideTabBarOnScrollTrigger"
+                                                   Event="Scrolled" />
+        </Style.Behaviors>
+    </Style>
+
+    <!-- ================================== LAYOUTS ================================== -->
+
+    <!-- ================================== PAGES ================================== -->
+</ResourceDictionary>
