@@ -54,7 +54,7 @@ namespace MauiExtensions.Platforms.Android
 
         public override void MeasureChild(global::Android.Views.View child, int widthUsed, int heightUsed)
         {
-            if (!IsRegularChild(child))
+            if (Size.IsAuto || !IsRegularChild(child))
             {
                 base.MeasureChildWithMargins(child, widthUsed, heightUsed);
                 return;
@@ -65,7 +65,7 @@ namespace MauiExtensions.Platforms.Android
 
         public override void MeasureChildWithMargins(global::Android.Views.View child, int widthUsed, int heightUsed)
         {
-            if (!IsRegularChild(child))
+            if (Size.IsAuto || !IsRegularChild(child))
             {
                 base.MeasureChildWithMargins(child, widthUsed, heightUsed);
                 return;

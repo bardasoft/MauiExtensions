@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Extensions
 
         //[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
         public static string GetItemSize(this MauiItemsLayout bindable) => (string)bindable.GetValue(ItemSizeProperty);
-        public static GridLength GetItemSizeGridLength(this MauiItemsLayout bindable) => (GridLength)new GridLengthTypeConverter().ConvertFrom(null, null, GetItemSize(bindable));
+        public static GridLength GetItemSizeGridLength(this MauiItemsLayout bindable) => GetItemSize(bindable) is string str ? (GridLength)new GridLengthTypeConverter().ConvertFrom(null, null, str) : GridLength.Auto;
         public static void SetItemSize(this MauiItemsLayout bindable, string value) => bindable.SetValue(ItemSizeProperty, value);
     }
 
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Extensions
         LayoutInfo Layout(object item);
     }
 
-    public class LinearItemsLayout : Controls.LinearItemsLayout, ICollectionViewLayoutManager
+    public class LinearItemsLayout : Maui.Controls.LinearItemsLayout, ICollectionViewLayoutManager
     {
         public static readonly BindableProperty ItemSizeProperty = BindableProperty.Create(nameof(ItemSize), typeof(GridLength), typeof(LinearItemsLayout), GridLength.Auto);//, propertyChanged: (bindable, oldValue, newValue) => ((RowDefinition)bindable).OnSizeChanged());
 
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Extensions
 
                     if (content is View view)
                     {
-                        var contentView = new Controls.ContentView { Content = view };
+                        var contentView = new Maui.Controls.ContentView { Content = view };
                         CompressedLayout.SetIsHeadless(contentView, true);
 
                         visualElement = contentView;
