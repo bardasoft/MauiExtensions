@@ -45,6 +45,12 @@ namespace Microsoft.Maui.Controls
 
     public class ArithmeticMultiConverter : IMultiValueConverter
     {
+        public static readonly ArithmeticMultiConverter ADD = new ArithmeticMultiConverter { Operation = Operations.Add };
+        public static readonly ArithmeticMultiConverter SUBTRACT = new ArithmeticMultiConverter { Operation = Operations.Subtract };
+        public static readonly ArithmeticMultiConverter MULTIPLY = new ArithmeticMultiConverter { Operation = Operations.Multiply };
+        public static readonly ArithmeticMultiConverter DIVIDE = new ArithmeticMultiConverter { Operation = Operations.Divide };
+        public static readonly ArithmeticMultiConverter EXPONENT = new ArithmeticMultiConverter { Operation = Operations.Exponent };
+
         public enum Operations { Add, Subtract, Multiply, Divide, Exponent }
         public Operations Operation { get; set; }
 
