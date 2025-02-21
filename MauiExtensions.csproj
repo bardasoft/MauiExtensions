@@ -40,6 +40,16 @@
 	  <Compile Update="Platforms\Windows\PlatformService.cs">
 	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
 	  </Compile>
+	  <Compile Update="Styles\ControlStyles.xaml.cs">
+	    <DependentUpon>ControlStyles.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\DrawerView.xaml.cs">
+	    <SubType>Code</SubType>
+	    <DependentUpon>DrawerView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\DrawerViewCompat.xaml.cs">
+	    <DependentUpon>DrawerViewCompat.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -47,7 +57,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Styles\Controls.xaml">
+	  <MauiXaml Update="Styles\ControlStyles.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\DrawerView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Extensions
 
             if (propertyName == IsEnabledProperty.PropertyName)
             {
-                foreach (VisualElement ve in new VisualElement[] { ValueSlider, ValueEntry, Decrease, Increase })
+                foreach (var ve in new Controls.VisualElement[] { ValueSlider, ValueEntry, Decrease, Increase })
                 {
                     ve.IsEnabled = IsEnabled;
                 }

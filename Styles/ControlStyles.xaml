@@ -4,7 +4,7 @@
                     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
                     xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=MauiExtensions"
                     xmlns:ext="clr-namespace:Microsoft.Maui.Controls.Extensions;assembly=MauiExtensions"
-                    x:Class="Microsoft.Maui.Controls.Extensions.Controls">
+                    x:Class="Microsoft.Maui.Controls.ControlStyles">
     <!-- ================================== VIEWS ================================== -->
 
     <Style TargetType="ScrollView"

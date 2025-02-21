@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.Extensions
                 TemplateCache.Add(key, template = new DataTemplate(() =>
                 {
                     var content = baseTemplate?.CreateContent();
-                    VisualElement? visualElement;
+                    Controls.VisualElement? visualElement;
 
                     if (content is View view)
                     {
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Extensions
                     }
                     else
                     {
-                        visualElement = content as VisualElement;
+                        visualElement = content as Controls.VisualElement;
                     }
 
                     if (visualElement != null)
@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Controls.Extensions
 
         private void SetSizeProperty(BindableObject bindable, bool width, GridLength length)
         {
-            var property = width ? VisualElement.WidthRequestProperty : VisualElement.HeightRequestProperty;
+            var property = width ? Controls.VisualElement.WidthRequestProperty : Controls.VisualElement.HeightRequestProperty;
 
             if (length.IsAuto)
             {
@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Controls.Extensions
             }
             else if (length.IsStar)
             {
-                var path = width ? VisualElement.HeightProperty.PropertyName : VisualElement.WidthProperty.PropertyName;
+                var path = width ? Controls.VisualElement.HeightProperty.PropertyName : Controls.VisualElement.WidthProperty.PropertyName;
                 var converter = length.Value == 1 ? null : new ScaleConverter(length.Value);
 
                 bindable.SetBinding(property, new RelativeBindingSource(RelativeBindingSourceMode.Self), path, value =>

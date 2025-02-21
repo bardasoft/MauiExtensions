@@ -1,284 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.Maui.Controls.Extensions;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.Xaml;
+using Microsoft.Maui.Controls.Compatibility;
 
-using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui.Controls.Compatibility
+namespace Microsoft.Maui.Controls
 {
-    public class RelativePositionViewModel : BindableViewModel
-    {
-        public VisualElement Ancestor { get; }
-        public VisualElement Child
-        {
-            get => _Child;
-            set => UpdateValue(ref _Child, value);
-        }
-
-        public Point Position
-        {
-            get => _Position;
-            set => UpdateValue(ref _Position, value);
-        }
-
-        private VisualElement _Child;
-        private Point _Position;
-
-        public RelativePositionViewModel(VisualElement ancestor)
-        {
-            Ancestor = ancestor;
-
-            PropertyChange += ChildChange;
-        }
-
-        private void ChildChange(object sender, PropertyChangeEventArgs e)
-        {
-            if (e.OldValue is VisualElement oldChild)
-            {
-                RemoveHandlers(oldChild);
-            }
-            if (e.NewValue is VisualElement newChild)
-            {
-                AddHandlers(newChild);
-            }
-        }
-
-        private void AddHandlers(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Element.Parent))
-            {
-                var element = (Element)sender;
-                AddHandlers(element.Parent);
-            }
-        }
-
-        private void RemoveHandlers(object sender, PropertyChangingEventArgs e)
-        {
-            if (e.PropertyName == nameof(Element.Parent))
-            {
-                var element = (Element)sender;
-                RemoveHandlers(element.Parent);
-            }
-        }
-
-        private void AddHandlers(Element element)
-        {
-            if (element == null)
-            {
-                return;
-            }
-
-            element.PropertyChanged += PositionChanged;
-
-            if (element is VisualElement visualElement)
-            {
-                visualElement.SizeChanged += SizeChanged;
-            }
-            if (element is Compatibility.Layout layout)
-            {
-                layout.LayoutChanged += LayoutChanged;
-            }
-
-            if (element != Ancestor)
-            {
-                element.PropertyChanging += RemoveHandlers;
-                element.PropertyChanged += AddHandlers;
-
-                AddHandlers(element.Parent);
-            }
-            else
-            {
-                BoundsChanged();
-            }
-        }
-
-        private void RemoveHandlers(Element element)
-        {
-            if (element == null)
-            {
-                return;
-            }
-
-            element.PropertyChanged -= PositionChanged;
-
-            if (element is VisualElement visualElement)
-            {
-                visualElement.SizeChanged -= SizeChanged;
-            }
-            if (element is Compatibility.Layout layout)
-            {
-                layout.LayoutChanged -= LayoutChanged;
-            }
-
-            if (element != Ancestor)
-            {
-                element.PropertyChanging -= RemoveHandlers;
-                element.PropertyChanged -= AddHandlers;
-
-                RemoveHandlers(element.Parent);
-            }
-        }
-
-        private void LayoutChanged(object sender, EventArgs e) => BoundsChanged();
-
-        private void SizeChanged(object sender, EventArgs e) => BoundsChanged();
-
-        private void PositionChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == VisualElement.XProperty.PropertyName || e.PropertyName == VisualElement.YProperty.PropertyName)
-            {
-                BoundsChanged();
-            }
-        }
-
-        private void BoundsChanged() => Position = Child.PositionOn(Ancestor);
-    }
-
-    public interface ISnapPoint
-    {
-        double Value { get; }
-    }
-
-    public class SnapPoint : Element, ISnapPoint
-    {
-        public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(ISnapPoint));
-
-        public double Value
-        {
-            get => (double)GetValue(ValueProperty);
-            set => SetValue(ValueProperty, value);
-        }
-
-        //public static implicit operator SnapPoint(double value) => new SnapPoint { Value = value };
-    }
-
-    public class ElementSnapPoint : Element, ISnapPoint
-    {
-        public static readonly BindableProperty ElementProperty = BindableProperty.Create(nameof(Element), typeof(VisualElement), typeof(ElementSnapPoint), propertyChanged: (bindable, oldValue, newValue) =>
-        {
-            var snapPoint = (ElementSnapPoint)bindable;
-
-            if (oldValue is VisualElement oldElement)
-            {
-                oldElement.SizeChanged -= snapPoint.PositionChanged;
-            }
-            if (newValue is VisualElement newElement)
-            {
-                newElement.SizeChanged += snapPoint.PositionChanged;
-            }
-            snapPoint.PositionChanged();
-
-            if (snapPoint.Position != null)
-            {
-                snapPoint.Position.Child = (VisualElement)newValue;
-            }
-        });
-
-        public VisualElement Element
-        {
-            get => (VisualElement)GetValue(ElementProperty);
-            set => SetValue(ElementProperty, value);
-        }
-
-        public double Value => GetPoint().Y;
-        public SnapPointsAlignment Alignment
-        {
-            get => _Alignment;
-            set
-            {
-                if (value != _Alignment)
-                {
-                    _Alignment = value;
-                    PositionChanged();
-                }
-            }
-        }
-
-        private RelativePositionViewModel Position;
-        private SnapPointsAlignment _Alignment;
-
-        public ElementSnapPoint()
-        {
-            PropertyChanging += ParentWillChange;
-            PropertyChanged += ParentDidChange;
-        }
-
-        public Point GetPoint()
-        {
-            if (Position == null || Element == null || !(Parent is VisualElement))
-            {
-                return Point.Zero;
-            }
-
-            var value = Position.Position;
-
-            if (Alignment == SnapPointsAlignment.Center)
-            {
-                value += (Size)Element.Bounds.Center;
-            }
-            else if (Alignment == SnapPointsAlignment.End)
-            {
-                value += Element.Bounds.Size;
-            }
-
-            return value;
-        }
-
-        private void ParentWillChange(object sender, PropertyChangingEventArgs e)
-        {
-            if (e.PropertyName == nameof(Parent) && Parent != null)
-            {
-                Parent.PropertyChanged -= DrawerContentChanged;
-            }
-        }
-
-        private void ParentDidChange(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(Parent) && Parent != null)
-            {
-                Parent.PropertyChanged += DrawerContentChanged;
-                DrawerContentChanged();
-            }
-        }
-
-        private void DrawerContentChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(DrawerView.DrawerContentView))
-            {
-                DrawerContentChanged();
-            }
-        }
-
-        private void DrawerContentChanged()
-        {
-            if (Position != null)
-            {
-                Position.Child = null;
-                Position.PropertyChanged -= PositionChanged;
-            }
-
-            var content = (Parent as DrawerView)?.DrawerContentView;
-
-            if (content != null)
-            {
-                Position = new RelativePositionViewModel(content)
-                {
-                    Child = Element
-                };
-                Position.PropertyChanged += PositionChanged;
-                PositionChanged();
-            }
-        }
-
-        private void PositionChanged(object sender, EventArgs e) => PositionChanged();
-        private void PositionChanged(object sender, PropertyChangedEventArgs e) => PositionChanged();
-        private void PositionChanged() => OnPropertyChanged(nameof(Value));
-    }
-
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class DrawerView : ContentView
     {
@@ -333,7 +59,9 @@ namespace Microsoft.Maui.Controls.Compatibility
             set => SetValue(IsOpenProperty, value);
         }
 
-        private static readonly Maui.Controls.Extensions.ViewFromTemplate<DrawerView> Items = new Maui.Controls.Extensions.ViewFromTemplate<DrawerView>((drawerView, view) =>
+        private static readonly Controls.Extensions.ViewFromTemplate<DrawerView> Items = new Controls.Extensions.ViewFromTemplate<DrawerView>(SetDrawerContent, nameof(Drawer), nameof(DrawerTemplate));
+
+        private static void SetDrawerContent(DrawerView drawerView, View view)
         {
             if (view == null)
             {
@@ -342,10 +70,13 @@ namespace Microsoft.Maui.Controls.Compatibility
 
             drawerView.DrawerContentView = view;
             drawerView.OnPropertyChanged(nameof(DrawerContentView));
-        }, nameof(Drawer), nameof(DrawerTemplate));
+        }
 
-        public static readonly BindableProperty DrawerProperty = Items.ItemSourceProperty;
-        public static readonly BindableProperty DrawerTemplateProperty = Items.ItemTemplateProperty;
+        //public static readonly BindableProperty DrawerProperty = Items.ItemSourceProperty;
+        //public static readonly BindableProperty DrawerTemplateProperty = Items.ItemTemplateProperty;
+
+        public static readonly BindableProperty DrawerProperty = BindableProperty.Create(nameof(Drawer), typeof(object), typeof(DrawerView));
+        public static readonly BindableProperty DrawerTemplateProperty = BindableProperty.Create(nameof(DrawerTemplate), typeof(ElementTemplate), typeof(DrawerView));
 
         public object Drawer
         {
@@ -385,6 +116,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
             PropertyChanged += (sender, e) =>
             {
+                if (e.PropertyName == DrawerProperty.PropertyName || e.PropertyName == DrawerTemplateProperty.PropertyName)
+                {
+                    var content = TemplatedContent.CreateContent(DrawerTemplate, Drawer, this) as View;
+                    if (content != null)
+                    {
+                        SetDrawerContent(this, content);
+                    }
+                }
                 if (e.PropertyName == IsOpenProperty.PropertyName || e.PropertyName == nameof(DrawerContentView))
                 {
                     ChangeState();

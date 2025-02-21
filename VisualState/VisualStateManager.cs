@@ -58,18 +58,18 @@ namespace Microsoft.Maui.Controls.Extensions
 
     public static class VisualStateManager
     {
-        public static readonly BindableProperty VisualStateProperty = BindableProperty.CreateAttached("VisualState", typeof(string), typeof(VisualElement), XFView.CommonStates.Normal, propertyChanged: (bindable, oldValue, newValue) => XFView.GoToState((VisualElement)bindable, (string)newValue));
+        public static readonly BindableProperty VisualStateProperty = BindableProperty.CreateAttached("VisualState", typeof(string), typeof(VisualElement), XFView.CommonStates.Normal, propertyChanged: (bindable, oldValue, newValue) => XFView.GoToState((Controls.VisualElement)bindable, (string)newValue));
 
         public static readonly BindableProperty GoToStateCommandProperty = BindableProperty.CreateAttached("GoToState", typeof(ICommand), typeof(VisualElement), null, BindingMode.OneWayToSource, defaultValueCreator: bindable => new Command<string>(stateName =>
         {
-            VisualElement visualElement = (VisualElement)bindable;
+            var visualElement = (Controls.VisualElement)bindable;
 
             XFView.GoToState(visualElement, stateName);
         }));
 
         public static readonly BindableProperty AutoWireStateChangeProperty = BindableProperty.CreateAttached("AutoWireStateChange", typeof(bool), typeof(VisualElement), false, propertyChanged: (b, o, n) =>
         {
-            VisualElement visualElement = (VisualElement)b;
+            var visualElement = (Controls.VisualElement)b;
 
             if (visualElement is Button button && !button.IsSet(Button.CommandProperty))
             {
@@ -78,11 +78,11 @@ namespace Microsoft.Maui.Controls.Extensions
         });
 
 
-        public static string GetVisualState(this VisualElement visualElement) => (string)visualElement.GetValue(VisualStateProperty);
-        public static string GetCanSetState(this VisualElement visualElement) => (string)visualElement.GetValue(AutoWireStateChangeProperty);
-        public static ICommand GetGoToStateCommand(this VisualElement visualElement) => (ICommand)visualElement.GetValue(GoToStateCommandProperty);
-        public static void SetVisualState(this VisualElement visualElement, string value) => visualElement.SetValue(VisualStateProperty, value);
-        public static void SetCanSetState(this VisualElement visualElement, string value) => visualElement.SetValue(AutoWireStateChangeProperty, value);
-        public static void SetGoToStateCommand(this VisualElement visualElement, ICommand value) => visualElement.SetValue(GoToStateCommandProperty, value);
+        public static string GetVisualState(this Controls.VisualElement visualElement) => (string)visualElement.GetValue(VisualStateProperty);
+        public static string GetCanSetState(this Controls.VisualElement visualElement) => (string)visualElement.GetValue(AutoWireStateChangeProperty);
+        public static ICommand GetGoToStateCommand(this Controls.VisualElement visualElement) => (ICommand)visualElement.GetValue(GoToStateCommandProperty);
+        public static void SetVisualState(this Controls.VisualElement visualElement, string value) => visualElement.SetValue(VisualStateProperty, value);
+        public static void SetCanSetState(this Controls.VisualElement visualElement, string value) => visualElement.SetValue(AutoWireStateChangeProperty, value);
+        public static void SetGoToStateCommand(this Controls.VisualElement visualElement, ICommand value) => visualElement.SetValue(GoToStateCommandProperty, value);
     }
 }

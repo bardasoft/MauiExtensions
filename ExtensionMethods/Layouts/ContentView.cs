@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -103,5 +104,142 @@ namespace Microsoft.Maui.Controls.Extensions
         public static void SetContentTemplate(this Target contentView, ElementTemplate value) => Items.SetItemTemplate(contentView, value);
         public static void SetItemSource(this Target contentView, object value) => Items.SetItemSource(contentView, value);
         public static void SetEmptyView(this Target contentView, object value) => Items.SetEmptyView(contentView, value);
+    }
+
+    public class TemplatedContentExtension : IMarkupExtension<BindingBase>
+    {
+        public Binding? Object { get; set; }
+        public Binding? Template { get; set; }
+
+        public BindingBase ProvideValue(IServiceProvider serviceProvider)
+        {
+            var provideValueTarget = serviceProvider.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
+
+            return new MultiBinding
+            {
+                Bindings =
+                {
+                    Object,
+                    Template
+                },
+                Converter = new TemplatedContentConverter(provideValueTarget?.TargetObject as BindableObject)
+            };
+        }
+
+        object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
+    }
+
+    public class TemplatedContentConverter : IMultiValueConverter
+    {
+        public static readonly TemplatedContentConverter Instance = new TemplatedContentConverter();
+
+        public BindableObject? Container { get; }
+
+        public TemplatedContentConverter() { }
+
+        public TemplatedContentConverter(BindableObject? container)
+        {
+            Container = container;
+        }
+
+        public object? Convert(object[] values, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (values.Length == 0)
+            {
+                return BindableProperty.UnsetValue;
+            }
+
+            object? context = null;
+            ElementTemplate? template = null;
+
+            for (var itr = values.GetEnumerator(); itr.MoveNext() && (context == null || template == null); )
+            {
+                if (template == null && itr.Current is ElementTemplate et)
+                {
+                    template = et;
+                }
+                else
+                {
+                    context ??= itr.Current;
+                }
+            }
+
+            return TemplatedContent.CreateContent(template, context, Container!);
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => null;
+    }
+
+    public class TemplatedContent
+    {
+        public static object? CreateContent(ElementTemplate? template, object? item, BindableObject container)
+        {
+            if (template != null)
+            {
+                if (template is DataTemplateSelector selector)
+                {
+                    if (item == null)
+                    {
+                        return null;
+                    }
+
+                    template = selector.SelectTemplate(item, container);
+                }
+
+                var result = template.CreateContent();
+                if (result is BindableObject bindable)
+                {
+                    bindable.BindingContext = item;
+                }
+
+                return result;
+            }
+            else if (item is not View && item != null)
+            {
+                //content = emptyView as View ?? (emptyView as ElementTemplate)?.CreateContent() as View ??
+                return new Label
+                {
+                    Text = item.ToString(),
+                    HorizontalTextAlignment = TextAlignment.Center,
+                    VerticalTextAlignment = TextAlignment.Center,
+                };
+            }
+            else
+            {
+                return item;
+            }
+        }
+    }
+
+    public static class IContentView
+    {
+        public static readonly BindableProperty ContentProperty = BindableProperty.CreateAttached(nameof(GetContent).Substring(3), typeof(object), typeof(Maui.IContentView), null, propertyChanged: (b, o, n) => UpdateContent((Maui.IContentView)b, item: n));
+        public static readonly BindableProperty ContentTemplateProperty = BindableProperty.CreateAttached(nameof(GetContentTemplate).Substring(3), typeof(ElementTemplate), typeof(Maui.IContentView), null, propertyChanged: (b, o, n) => UpdateContent((Maui.IContentView)b, (ElementTemplate)n));
+
+        public static readonly BindableProperty EmptyViewProperty = BindableProperty.CreateAttached(nameof(GetEmptyView).Substring(3), typeof(object), typeof(Maui.IContentView), null, propertyChanged: (b, o, n) => UpdateContent((Maui.IContentView)b, emptyView: n));
+        public static readonly BindableProperty EmptyViewTemplateProperty = BindableProperty.CreateAttached(nameof(GetEmptyViewTemplate).Substring(3), typeof(ElementTemplate), typeof(Maui.IContentView), null, propertyChanged: (b, o, n) => UpdateContent((Maui.IContentView)b, emptyView: n));
+
+        private static void UpdateContent(Maui.IContentView contentView, ElementTemplate? template = null, object? item = null, ElementTemplate? emptyViewTemplate = null, object? emptyView = null)
+        {
+            var content = TemplatedContent.CreateContent(template ?? GetContentTemplate(contentView), item ?? GetContent(contentView), (BindableObject)contentView)
+                ?? TemplatedContent.CreateContent(emptyViewTemplate ?? GetEmptyViewTemplate(contentView), emptyView ?? GetEmptyView(contentView), (BindableObject)contentView);
+
+            try
+            {
+                // Hope Content property has a setter and content is a View
+                contentView.GetType().GetField(nameof(Maui.IContentView.Content))?.SetValue(contentView, content);
+            }
+            catch { }
+        }
+
+        public static object GetContent(Maui.IContentView bindable) => ((BindableObject)bindable).GetValue(ContentProperty);
+        public static ElementTemplate GetContentTemplate(Maui.IContentView bindable) => (ElementTemplate)((BindableObject)bindable).GetValue(ContentTemplateProperty);
+        public static object GetEmptyView(Maui.IContentView bindable) => ((BindableObject)bindable).GetValue(EmptyViewProperty);
+        public static ElementTemplate GetEmptyViewTemplate(Maui.IContentView bindable) => (ElementTemplate)((BindableObject)bindable).GetValue(EmptyViewTemplateProperty);
+
+        public static void SetContent(Maui.IContentView bindable, object value) => ((BindableObject)bindable).SetValue(ContentProperty, value);
+        public static void SetContentTemplate(Maui.IContentView bindable, ElementTemplate value) => ((BindableObject)bindable).SetValue(ContentTemplateProperty, value);
+        public static void SetEmptyView(Maui.IContentView bindable, object value) => ((BindableObject)bindable).SetValue(EmptyViewProperty, value);
+        public static void SetEmptyViewTemplate(Maui.IContentView bindable, ElementTemplate value) => ((BindableObject)bindable).SetValue(EmptyViewTemplateProperty, value);
     }
 }
