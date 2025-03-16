@@ -1,13 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Microsoft.Maui.Controls
+﻿namespace Microsoft.Maui.Controls
 {
-    [ContentProperty(nameof(Template))]
-    public class TypeDataTemplate
+    //[ContentProperty(nameof(Template))]
+    public class TypeDataTemplate : Mapping<Type, DataTemplate>
     {
-        public Type Type { get; set; }
-        public DataTemplate Template { get; set; }
+        public Type Type
+        {
+            get => Key;
+            set => Key = value;
+        }
+        public DataTemplate Template
+        {
+            get => Value;
+            set => Value = value;
+        }
     }
 
     //[ContentProperty(nameof(Templates))]
@@ -28,7 +33,7 @@ namespace Microsoft.Maui.Controls
             foreach (var kvp in Templates)
             {
                 //if (item?.GetType().IsAssignableFrom(template.Type) == true)
-                
+
             }
 
             result = null;
@@ -131,5 +136,64 @@ namespace Microsoft.Maui.Controls
         }
 
         protected virtual Type GetType(object item) => item.GetType();
+    }
+
+    public class TemplateMapping<TKey> : Mapping<TKey, DataTemplate> { }
+    public class TemplateMapping : TemplateMapping<object> { }
+
+    [ContentProperty(nameof(Mappings))]
+    public abstract class MappingDataTemplateSelector<TKey> : DataTemplateSelector
+        where TKey : notnull
+    {
+        public ICollection<Mapping<object, DataTemplate>> Mappings => _Mappings;
+
+        protected MappingDictionary<TKey, DataTemplate, object, DataTemplate> _Mappings = new MappingDictionary<TKey, DataTemplate, object, DataTemplate>();
+
+        public DataTemplate DefaultTemplate { get; set; } = ObjectTemplate;
+        public static DataTemplate ObjectTemplate { get; set; } = new DataTemplate(() =>
+        {
+            var label = new Label();
+            label.SetBinding(Label.TextProperty, ".");
+            return label;
+        });
+
+        protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
+        {
+            if (item == null || _Mappings.TryGetValue(GetMappingProperty(item), out var template))
+            {
+                template = DefaultTemplate;
+            }
+
+            return template is DataTemplateSelector selector ? selector.SelectTemplate(item, container) : template;
+        }
+
+        protected abstract TKey GetMappingProperty(object item);
+    }
+
+    public class MappingDataTemplateSelector : MappingDataTemplateSelector<object>
+    {
+        protected override object GetMappingProperty(object item) => item;
+    }
+
+    public class AutoDataTemplateSelector : MappingDataTemplateSelector<Type>
+    {
+        protected override DataTemplate? OnSelectTemplate(object item, BindableObject container)
+        {
+            var template = base.OnSelectTemplate(item, container);
+            if (template == DefaultTemplate)
+            {
+                foreach (var kvp in _Mappings)
+                {
+                    if (kvp.Key?.IsAssignableFrom(item.GetType()) == true)
+                    {
+                        return kvp.Value;
+                    }
+                }
+            }
+
+            return template;
+        }
+
+        protected override Type GetMappingProperty(object item) => item.GetType();
     }
 }

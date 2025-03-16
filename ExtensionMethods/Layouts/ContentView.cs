@@ -106,10 +106,11 @@ namespace Microsoft.Maui.Controls.Extensions
         public static void SetEmptyView(this Target contentView, object value) => Items.SetEmptyView(contentView, value);
     }
 
+    [ContentProperty(nameof(Item))]
     public class TemplatedContentExtension : IMarkupExtension<BindingBase>
     {
-        public Binding? Object { get; set; }
-        public Binding? Template { get; set; }
+        public BindingBase? Item { get; set; }
+        public BindingBase? Template { get; set; }
 
         public BindingBase ProvideValue(IServiceProvider serviceProvider)
         {
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.Controls.Extensions
             {
                 Bindings =
                 {
-                    Object,
+                    Item,
                     Template
                 },
                 Converter = new TemplatedContentConverter(provideValueTarget?.TargetObject as BindableObject)
@@ -129,7 +130,7 @@ namespace Microsoft.Maui.Controls.Extensions
         object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) => ProvideValue(serviceProvider);
     }
 
-    public class TemplatedContentConverter : IMultiValueConverter
+    public class TemplatedContentConverter : IValueConverter<object, View>, IMultiValueConverter
     {
         public static readonly TemplatedContentConverter Instance = new TemplatedContentConverter();
 
@@ -140,6 +141,18 @@ namespace Microsoft.Maui.Controls.Extensions
         public TemplatedContentConverter(BindableObject? container)
         {
             Container = container;
+        }
+
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            if (parameter is ElementTemplate template)
+            {
+                return TemplatedContent.CreateContent(template, value, Container!);
+            }
+            else
+            {
+                return value;
+            }
         }
 
         public object? Convert(object[] values, Type targetType, object? parameter, CultureInfo culture)
@@ -167,7 +180,12 @@ namespace Microsoft.Maui.Controls.Extensions
             return TemplatedContent.CreateContent(template, context, Container!);
         }
 
-        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => null;
+        public object? ConvertBack(View? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => null!;
     }
 
     public class TemplatedContent

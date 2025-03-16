@@ -11,6 +11,7 @@
                 <Border Content="{TemplateBinding DrawerContentView}"
                         IsVisible="{Binding Content.IsVisible, Source={RelativeSource Self}}"
                         StrokeShape="RoundRectangle 10"
+                        StrokeThickness="0"
                         AbsoluteLayout.LayoutBounds="0.5, 1, 1, -1"
                         AbsoluteLayout.LayoutFlags="PositionProportional, WidthProportional" />
             </AbsoluteLayout>
