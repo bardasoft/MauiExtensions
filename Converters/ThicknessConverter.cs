@@ -155,8 +155,22 @@ namespace Microsoft.Maui.Controls
         object? Convert(TIn? value, Type targetType, TParameter? parameter, CultureInfo culture);
         object? ConvertBack(TOut? value, Type targetType, TParameter? parameter, CultureInfo culture);
 
-        object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is TIn t && parameter is TParameter tp ? Convert(t, targetType, tp, culture) : null;
-        object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value is TOut t && parameter is TParameter tp ? ConvertBack(t, targetType, tp, culture) : null;
+        object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => TryCast(value, out TIn? t) && TryCast(parameter, out TParameter? tp) ? Convert(t, targetType, tp, culture) : null;
+        object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => TryCast(value, out TOut? t) && TryCast(parameter, out TParameter? tp) ? ConvertBack(t, targetType, tp, culture) : null;
+
+        private static bool TryCast<T>(object? value, out T? result)
+        {
+            if (value is T t)
+            {
+                result = t;
+                return true;
+            }
+            else
+            {
+                result = default;
+                return value == null && !typeof(T).IsValueType;
+            }
+        }
     }
 
     public class ThicknessConverter : IValueConverter<double, Thickness, ThicknessProperties>, IMultiValueConverter

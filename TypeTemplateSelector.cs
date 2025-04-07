@@ -147,7 +147,7 @@
     {
         public ICollection<Mapping<object, DataTemplate>> Mappings => _Mappings;
 
-        protected MappingDictionary<TKey, DataTemplate, object, DataTemplate> _Mappings = new MappingDictionary<TKey, DataTemplate, object, DataTemplate>();
+        protected MappingDictionary<object, DataTemplate> _Mappings = new MappingDictionary<object, DataTemplate>();
 
         public DataTemplate DefaultTemplate { get; set; } = ObjectTemplate;
         public static DataTemplate ObjectTemplate { get; set; } = new DataTemplate(() =>
@@ -184,7 +184,7 @@
             {
                 foreach (var kvp in _Mappings)
                 {
-                    if (kvp.Key?.IsAssignableFrom(item.GetType()) == true)
+                    if (kvp.Key is Type type && type?.IsAssignableFrom(item.GetType()) == true)
                     {
                         return kvp.Value;
                     }

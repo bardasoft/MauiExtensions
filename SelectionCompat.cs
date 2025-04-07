@@ -1,9 +1,11 @@
-﻿using System.Collections.Specialized;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Windows.Input;
-using Selectable = Microsoft.Maui.Controls.Layout;
+using Selectable = Microsoft.Maui.Controls.Compatibility.Layout<Microsoft.Maui.Controls.View>;
 using SelectionList = System.Collections.Generic.IList<object>;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls.Compatibility
 {
     public static class Selection
     {
@@ -50,7 +52,7 @@ namespace Microsoft.Maui.Controls
         public static readonly BindableProperty SelectedItemsProperty = BindableProperty.CreateAttached("SelectedItems", typeof(SelectionList), typeof(Selectable), null, BindingMode.TwoWay, propertyChanged: (bindable, oldValue, newValue) =>
         {
             // TODO Needs to be updated to remove references to Compatibility namespace
-            //return;
+            return;
             Selectable selectable = (Selectable)bindable;
             SelectionList oldList = (SelectionList)oldValue;
             SelectionList list = (SelectionList)newValue;
@@ -113,23 +115,52 @@ namespace Microsoft.Maui.Controls
         {
             var selectable = (Selectable)bindable;
             //var selectedItems = selectable.GetSelectedItems();
-            var indices = new HashSet<int>(Enumerable.Range(0, selectable.Children.Count).Where(index => (selectable.Children[index] as VisualElement)?.GetIsSelected() == true));
+            var indices = new HashSet<int>(Enumerable.Range(0, selectable.Children.Count).Where(index => selectable.Children[index].GetIsSelected()));
             indices.SymmetricExceptWith((IList<int>)newValue ?? Enumerable.Empty<int>());
-
+            
             foreach (var index in indices)
             {
-                if (index > 0 && index < selectable.Children.Count && selectable.Children[index] is VisualElement visualElement)
+                if (index > 0 && index < selectable.Children.Count)
                 {
-                    ToggleSelected(selectable, visualElement);
+                    ToggleSelected(selectable, selectable.Children[index]);
                 }
             }
         });
+
+        private static void Test(object state)
+        {
+            var stateTuple = ((NotifyCollectionChangedEventArgs, Selectable, int))state;
+            NotifyCollectionChangedEventArgs e = stateTuple.Item1;
+            Selectable selectable = stateTuple.Item2;
+            int collectionCount = stateTuple.Item3;
+
+            return;
+
+            bool clear = e.Action == NotifyCollectionChangedAction.Reset || (e.Action == NotifyCollectionChangedAction.Replace && collectionCount == e.NewItems.Count);
+            IEnumerable<View> deselect = clear ? selectable.Children : (e.OldItems == null ? null : selectable.Children.Where(view => e.OldItems.Contains(view.BindingContext)));
+
+            if (deselect != null)
+            {
+                foreach (View view in deselect)
+                {
+                    Device.BeginInvokeOnMainThread(() => view.SetIsSelected(false));
+                }
+            }
+
+            if (e.NewItems != null)
+            {
+                foreach (View view in selectable.Children.Where(view => e.NewItems.Contains(view.BindingContext)))
+                {
+                    Device.BeginInvokeOnMainThread(() => view.SetIsSelected(true));
+                }
+            }
+        }
 
         public static readonly BindableProperty SelectionChangedCommandProperty = BindableProperty.CreateAttached("SelectionChangedCommand", typeof(ICommand), typeof(Selectable), null);
 
         public static readonly BindableProperty SelectionChangedCommandParameterProperty = BindableProperty.CreateAttached("SelectionChangedCommandParameter", typeof(object), typeof(Selectable), null);
 
-        private static void HandleSelection(object? sender, ElementEventArgs e)
+        private static void HandleSelection(object sender, ElementEventArgs e)
         {
             var parameter = ((Selectable)sender, e.Element as VisualElement);
 
@@ -175,15 +206,10 @@ namespace Microsoft.Maui.Controls
 
             for (int i = 0; i < selectable.Children.Count; i++)
             {
-                var visualElement = selectable.Children[i] as VisualElement;
-                if (visualElement == null)
-                {
-                    continue;
-                }
+                var view = selectable.Children[i];
+                var selected = selectedItems.Contains(view.BindingContext);
 
-                var selected = selectedItems.Contains(visualElement.BindingContext);
-
-                visualElement.SetIsSelected(selected);
+                view.SetIsSelected(selected);
                 if (selected)
                 {
                     indices.Add(i);
