@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
+    [BindingValueConverter]
     public class FalseIfNullConverter : IValueConverter
     {
         public static readonly FalseIfNullConverter Instance = new FalseIfNullConverter();

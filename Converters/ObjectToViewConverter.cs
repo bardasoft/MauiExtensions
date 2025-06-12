@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
+    [BindingValueConverter]
     public class ObjectToViewConverter : IValueConverter
     {
         public static readonly ObjectToViewConverter Instance = new ObjectToViewConverter();
