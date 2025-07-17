@@ -5,6 +5,8 @@ namespace Microsoft.Maui.Controls
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
     public class BindingValueConverterAttribute : Attribute { }
 
+    public class ConverterExtension : ServicesInstanceExtension { }
+
     [ContentProperty(nameof(Type))]
     public class ServicesInstanceExtension : IMarkupExtension
     {
