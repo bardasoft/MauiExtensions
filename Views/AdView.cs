@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 {
     public enum AdSizes { Undefined, Banner, MediumRectangle }
 
-    public class AdView : ContentView
+    public class AdView : View
     {
         public static readonly Size BannerAdSize = new Size(-1, 0);
         public static readonly double InlineBannerHeight = -2;

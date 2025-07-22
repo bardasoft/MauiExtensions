@@ -24,6 +24,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.80" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.80" />
+		<PackageReference Include="Xamarin.Google.iOS.MobileAds" Version="8.13.0.3" />
 	</ItemGroup>
 
 	<!-- Android -->
@@ -85,6 +86,12 @@
 		<MauiXaml Update="Views\ExpandableContentView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+	  <PackageReference Include="Xamarin.GooglePlayServices.Ads.Lite">
+	    <Version>124.0.0.2</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 </Project>
