@@ -2,7 +2,8 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:maui="clr-namespace:Microsoft.Maui.Controls;assembly=MauiExtensions"
-             x:Class="Microsoft.Maui.Controls.ExpandableContentView">
+             x:Class="Microsoft.Maui.Controls.ExpandableContentView"
+             MinimumHeightRequest="{Binding CollapsedHeight, Source={RelativeSource Self}}">
     <View.GestureRecognizers>
         <TapGestureRecognizer Command="{Binding ToggleExpandedCommand, Source={RelativeSource AncestorType={x:Type maui:ExpandableContentView}}}" />
     </View.GestureRecognizers>

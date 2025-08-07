@@ -9,12 +9,36 @@ public partial class ExpandableContentView : ContentView
 
     public static readonly BindableProperty CollapsedHeightProperty = BindableProperty.Create(nameof(CollapsedHeight), typeof(double), typeof(ExpandableContentView), -1d);
 
+    public static readonly BindableProperty CollapseHintProperty = BindableProperty.Create(nameof(CollapseHint), typeof(string), typeof(ExpandableContentView), null);
+
     public static readonly BindableProperty IsExpandedProperty = BindableProperty.Create(nameof(IsExpanded), typeof(bool), typeof(ExpandableContentView), false, propertyChanged: IsExpandedPropertyChanged);
+
+    public static readonly BindableProperty ExpandHintProperty = BindableProperty.Create(nameof(ExpandHint), typeof(string), typeof(ExpandableContentView), null);
+
+    public bool CanExpand
+    {
+        get => _CanExpand;
+        set
+        {
+            if (_CanExpand != value)
+            {
+                OnPropertyChanging(nameof(CanExpand));
+                _CanExpand = value;
+                OnPropertyChanged(nameof(CanExpand));
+            }
+        }
+    }
 
     public double CollapsedHeight
     {
         get => (double)GetValue(CollapsedHeightProperty);
         set => SetValue(CollapsedHeightProperty, value);
+    }
+
+    public string CollapseHint
+    {
+        get => (string)GetValue(CollapseHintProperty);
+        set => SetValue(CollapseHintProperty, value);
     }
 
     public bool IsExpanded
@@ -23,7 +47,15 @@ public partial class ExpandableContentView : ContentView
         set => SetValue(IsExpandedProperty, value);
     }
 
+    public string ExpandHint
+    {
+        get => (string)GetValue(ExpandHintProperty);
+        set => SetValue(ExpandHintProperty, value);
+    }
+
     public ICommand ToggleExpandedCommand { get; }
+
+    private bool _CanExpand;
 
     public ExpandableContentView()
     {
@@ -46,7 +78,7 @@ public partial class ExpandableContentView : ContentView
         {
             ecv.HeightRequest = -1;
         }
-        else
+        else if (ecv.IsSet(CollapsedHeightProperty))
         {
             ecv.SetBinding(HeightRequestProperty, new Binding
             {
